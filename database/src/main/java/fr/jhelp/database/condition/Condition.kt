@@ -5,6 +5,7 @@ import fr.jhelp.database.EncryptedCursor
 
 interface Condition
 {
+    fun refresh(){}
     fun valid(values:Map<Column, Any?>) : Boolean
 }
 

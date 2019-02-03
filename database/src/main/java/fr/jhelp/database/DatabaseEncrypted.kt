@@ -92,6 +92,7 @@ class DatabaseEncrypted(context: Context, databaseName: String)
 
     fun select(select: Select): EncryptedCursor
     {
+        select.where.refresh()
         val table = select.table
         val columns = select.columns
         columns.firstOrNull { it !in table }?.let { throw IllegalArgumentException("$it column not in table $table") }

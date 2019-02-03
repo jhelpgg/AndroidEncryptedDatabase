@@ -12,7 +12,7 @@ import fr.jhelp.database.PRIMARY_KEY
 import fr.jhelp.database.TEXT
 import java.util.GregorianCalendar
 
-class Equals internal constructor(private val column: Column, private val value: Any) : Condition
+class ConditionEquals internal constructor(private val column: Column, private val value: Any) : Condition
 {
     override fun valid(values: Map<Column, Any?>): Boolean
     {
@@ -39,7 +39,7 @@ infix fun Column.EQUALS_PRIMARY(id: Long): Condition
         throw IllegalArgumentException("$this not a primary key")
     }
 
-    return Equals(this, id)
+    return ConditionEquals(this, id)
 }
 
 infix fun Column.EQUALS(value: Int): Condition
@@ -49,7 +49,7 @@ infix fun Column.EQUALS(value: Int): Condition
         throw IllegalArgumentException("$this not a integer")
     }
 
-    return Equals(this, value)
+    return ConditionEquals(this, value)
 }
 
 infix fun Column.EQUALS(value: Long): Condition
@@ -59,7 +59,7 @@ infix fun Column.EQUALS(value: Long): Condition
         throw IllegalArgumentException("$this not a long")
     }
 
-    return Equals(this, value)
+    return ConditionEquals(this, value)
 }
 
 infix fun Column.EQUALS(value: Float): Condition
@@ -69,7 +69,7 @@ infix fun Column.EQUALS(value: Float): Condition
         throw IllegalArgumentException("$this not a float")
     }
 
-    return Equals(this, value)
+    return ConditionEquals(this, value)
 }
 
 infix fun Column.EQUALS(value: Double): Condition
@@ -79,7 +79,7 @@ infix fun Column.EQUALS(value: Double): Condition
         throw IllegalArgumentException("$this not a double")
     }
 
-    return Equals(this, value)
+    return ConditionEquals(this, value)
 }
 
 infix fun Column.EQUALS(value: GregorianCalendar): Condition
@@ -89,7 +89,7 @@ infix fun Column.EQUALS(value: GregorianCalendar): Condition
         throw IllegalArgumentException("$this not a date")
     }
 
-    return Equals(this, value)
+    return ConditionEquals(this, value)
 }
 
 infix fun Column.EQUALS(value: String): Condition
@@ -99,7 +99,7 @@ infix fun Column.EQUALS(value: String): Condition
         throw IllegalArgumentException("$this not a text")
     }
 
-    return Equals(this, value)
+    return ConditionEquals(this, value)
 }
 
 infix fun <P : Parcelable> Column.EQUALS(value: P): Condition
@@ -114,5 +114,5 @@ infix fun <P : Parcelable> Column.EQUALS(value: P): Condition
         throw IllegalArgumentException("$this not a parcelable of ${value.javaClass}")
     }
 
-    return Equals(this, value)
+    return ConditionEquals(this, value)
 }
