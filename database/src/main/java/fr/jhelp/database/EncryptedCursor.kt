@@ -10,7 +10,7 @@ import java.lang.ref.WeakReference
 import java.util.GregorianCalendar
 
 class EncryptedCursor internal constructor(
-    private val cursor: Cursor,
+    internal val cursor: Cursor,
     private val context: WeakReference<Context>,
     private val realColumns: Array<Column>,
     private val visibleColumns: Array<Column>,
@@ -35,6 +35,7 @@ class EncryptedCursor internal constructor(
             }
         }
 
+        this.cursor.close()
         return false
     }
 

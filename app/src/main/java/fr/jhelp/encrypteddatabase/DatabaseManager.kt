@@ -9,7 +9,10 @@ import fr.jhelp.database.PRIMARY_KEY
 import fr.jhelp.database.TEXT
 import fr.jhelp.database.Table
 import fr.jhelp.database.condition.EQUALS
+import fr.jhelp.database.condition.UPPER
+import fr.jhelp.database.request.Delete
 import fr.jhelp.database.request.Select
+import fr.jhelp.database.request.Update
 
 val columnID = Column("ID", PRIMARY_KEY)
 val columnName = Column("Name", TEXT)
@@ -52,7 +55,21 @@ class DatabaseManager(context: Context)
 
     fun getPerson(age: Int): CursorPerson
     {
-        val select = Select(tablePerson, arrayOf(columnName, columnAge)) WHERE (columnAge EQUALS 1)
+        val select = Select(tablePerson, arrayOf(columnName, columnAge)) WHERE (columnAge EQUALS age)
         return CursorPerson(this.database.select(select))
+    }
+
+    fun changeAge(oldAge:Int,newAge:Int)
+    {
+        val encryptedContent = EncryptedContent(tablePerson)
+        encryptedContent[columnAge] = newAge
+        val update = Update(encryptedContent) WHERE  (columnAge EQUALS oldAge)
+        this.database.update(update)
+    }
+
+    fun deletePersonOlderThan(age:Int)
+    {
+        val delete = Delete(tablePerson) WHERE (columnAge UPPER age)
+        this.database.delete(delete)
     }
 }

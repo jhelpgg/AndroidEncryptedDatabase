@@ -6,7 +6,9 @@ import android.os.Parcelable
 import fr.jhelp.cryptographic.encrypt
 import fr.jhelp.cryptographic.encryptName
 import fr.jhelp.cryptographic.encryptParcelable
+import fr.jhelp.database.request.Delete
 import fr.jhelp.database.request.Select
+import fr.jhelp.database.request.Update
 import java.lang.ref.WeakReference
 import java.util.TreeSet
 
@@ -20,7 +22,7 @@ class DatabaseEncrypted(context: Context, databaseName: String)
     {
         if (!this.tables.add(table))
         {
-            throw IllegalArgumentException(("Table $table already created"))
+            throw IllegalArgumentException("Table $table already created")
         }
 
         this.context.get()?.let { context ->
@@ -82,7 +84,6 @@ class DatabaseEncrypted(context: Context, databaseName: String)
                     DATE             -> contentValues.put(columnName, encrypt(context, value.toString()))
                     TEXT             -> contentValues.put(columnName, encrypt(context, value.toString()))
                     is PARCELABLE<*> -> contentValues.put(columnName, encryptParcelable(context, value as Parcelable))
-                    //   else             -> throw IllegalArgumentException("Not managed type ${column.type}")
                 }
             }
 
@@ -104,5 +105,115 @@ class DatabaseEncrypted(context: Context, databaseName: String)
             val cursor = this.database.query(tableName, columnsName, null, null, null, null, null)
             EncryptedCursor(cursor, this.context, allColumns, columns, select.where)
         } ?: throw IllegalStateException("No context !")
+    }
+
+    fun update(update: Update): Int
+    {
+        var count = 0
+
+        this.context.get()?.let { context ->
+            val encryptedContent = update.encryptedContent
+            val contentValues = ContentValues()
+
+            for ((column, value) in encryptedContent.contentEntries)
+            {
+                val columnName = encryptName(context, column.name)
+
+                when (column.type)
+                {
+                    PRIMARY_KEY      -> contentValues.put(columnName, value as Long)
+                    INTEGER          -> contentValues.put(columnName, encrypt(context, value.toString()))
+                    LONG             -> contentValues.put(columnName, encrypt(context, value.toString()))
+                    FLOAT            -> contentValues.put(columnName, encrypt(context, value.toString()))
+                    DOUBLE           -> contentValues.put(columnName, encrypt(context, value.toString()))
+                    DATE             -> contentValues.put(columnName, encrypt(context, value.toString()))
+                    TEXT             -> contentValues.put(columnName, encrypt(context, value.toString()))
+                    is PARCELABLE<*> -> contentValues.put(columnName, encryptParcelable(context, value as Parcelable))
+                }
+            }
+
+            val tableName = encryptName(context, encryptedContent.table.name)
+            val columns = encryptedContent.table.columns()
+            val encryptedCursor = this.select(Select(encryptedContent.table, columns) WHERE update.where)
+
+            while (encryptedCursor.moveToNext())
+            {
+                val cursor = encryptedCursor.cursor
+                val conditionValues = arrayOfNulls<String>(columns.size)
+                val condition = StringBuilder()
+                condition.append(encryptName(context, columns[0].name))
+                condition.append("=?")
+
+                conditionValues[0] = when
+                {
+                    columns[0].type == PRIMARY_KEY -> cursor.getLong(0).toString()
+                    cursor.isNull(0)               -> null
+                    else                           -> cursor.getString(0)
+                }
+
+                for (index in 1 until columns.size)
+                {
+                    condition.append(" AND ")
+                    condition.append(encryptName(context, columns[index].name))
+                    condition.append("=?")
+
+                    conditionValues[index] = when
+                    {
+                        columns[index].type == PRIMARY_KEY -> cursor.getLong(index).toString()
+                        cursor.isNull(index)               -> null
+                        else                               -> cursor.getString(index)
+                    }
+                }
+
+                count += this.database.update(tableName, contentValues, condition.toString(), conditionValues)
+            }
+        }
+
+        return count
+    }
+
+    fun delete(delete: Delete): Int
+    {
+        var count = 0
+
+        this.context.get()?.let { context ->
+            val tableName = encryptName(context, delete.table.name)
+            val columns = delete.table.columns()
+            val encryptedCursor = this.select(Select(delete.table, columns) WHERE delete.where)
+
+            while (encryptedCursor.moveToNext())
+            {
+                val cursor = encryptedCursor.cursor
+                val conditionValues = arrayOfNulls<String>(columns.size)
+                val condition = StringBuilder()
+                condition.append(encryptName(context, columns[0].name))
+                condition.append("=?")
+
+                conditionValues[0] = when
+                {
+                    columns[0].type == PRIMARY_KEY -> cursor.getLong(0).toString()
+                    cursor.isNull(0)               -> null
+                    else                           -> cursor.getString(0)
+                }
+
+                for (index in 1 until columns.size)
+                {
+                    condition.append(" AND ")
+                    condition.append(encryptName(context, columns[index].name))
+                    condition.append("=?")
+
+                    conditionValues[index] = when
+                    {
+                        columns[index].type == PRIMARY_KEY -> cursor.getLong(index).toString()
+                        cursor.isNull(index)               -> null
+                        else                               -> cursor.getString(index)
+                    }
+                }
+
+                count += this.database.delete(tableName, condition.toString(), conditionValues)
+            }
+        }
+
+        return count
     }
 }

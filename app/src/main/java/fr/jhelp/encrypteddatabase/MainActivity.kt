@@ -53,6 +53,32 @@ class MainActivity : Activity()
                     person = cursorPerson.nextPerson()
                 }
 
+                Log.d(TAG, "Babies get older")
+                this.database.changeAge(1, 2)
+                Log.d(TAG, "Will get all")
+                cursorPerson = this.database.getAllPerson()
+                Log.d(TAG, "All get")
+                person = cursorPerson.nextPerson()
+
+                while (person != null)
+                {
+                    Log.d(TAG, "person = $person")
+                    person = cursorPerson.nextPerson()
+                }
+
+                Log.d(TAG, "Remove older 40")
+                this.database.deletePersonOlderThan(40)
+                Log.d(TAG, "Will get all")
+                cursorPerson = this.database.getAllPerson()
+                Log.d(TAG, "All get")
+                person = cursorPerson.nextPerson()
+
+                while (person != null)
+                {
+                    Log.d(TAG, "person = $person")
+                    person = cursorPerson.nextPerson()
+                }
+
                 Log.d(TAG, "END")
             }
             catch (throwable: Throwable)
