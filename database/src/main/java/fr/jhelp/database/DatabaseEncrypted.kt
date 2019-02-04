@@ -18,6 +18,8 @@ class DatabaseEncrypted(context: Context, databaseName: String)
     private val database = context.openOrCreateDatabase(databaseName, Context.MODE_PRIVATE, null)
     private val tables = TreeSet<Table>()
 
+    fun tables() = this.tables.toTypedArray()
+
     fun createTable(table: Table)
     {
         if (!this.tables.add(table))
@@ -66,6 +68,11 @@ class DatabaseEncrypted(context: Context, databaseName: String)
 
     fun insert(encryptedContent: EncryptedContent)
     {
+        if (encryptedContent.table !in this.tables)
+        {
+            throw IllegalArgumentException("Unknown table : ${encryptedContent.table}")
+        }
+
         this.context.get()?.let { context ->
             val tableName = encryptName(context, encryptedContent.table.name)
             val contentValues = ContentValues()
@@ -93,6 +100,11 @@ class DatabaseEncrypted(context: Context, databaseName: String)
 
     fun select(select: Select): EncryptedCursor
     {
+        if (select.table !in this.tables)
+        {
+            throw IllegalArgumentException("Unknown table : ${select.table}")
+        }
+
         select.where.refresh()
         val table = select.table
         val columns = select.columns
@@ -109,6 +121,11 @@ class DatabaseEncrypted(context: Context, databaseName: String)
 
     fun update(update: Update): Int
     {
+        if (update.encryptedContent.table !in this.tables)
+        {
+            throw IllegalArgumentException("Unknown table : ${update.encryptedContent.table}")
+        }
+
         var count = 0
 
         this.context.get()?.let { context ->
@@ -174,6 +191,11 @@ class DatabaseEncrypted(context: Context, databaseName: String)
 
     fun delete(delete: Delete): Int
     {
+        if (delete.table !in this.tables)
+        {
+            throw IllegalArgumentException("Unknown table : ${delete.table}")
+        }
+
         var count = 0
 
         this.context.get()?.let { context ->
@@ -216,4 +238,18 @@ class DatabaseEncrypted(context: Context, databaseName: String)
 
         return count
     }
+
+    fun drop(table: Table)
+    {
+        this.context.get()?.let { context ->
+            if (table in this.tables)
+            {
+                val tableName = encryptName(context, table.name)
+                this.database.execSQL("DROP TABLE $tableName")
+                this.tables.remove(table)
+            }
+        }
+    }
+
+
 }

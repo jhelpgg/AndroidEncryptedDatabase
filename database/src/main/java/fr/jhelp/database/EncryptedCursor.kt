@@ -16,7 +16,7 @@ class EncryptedCursor internal constructor(
     private val visibleColumns: Array<Column>,
     private val where: Condition)
 {
-    private var values: Map<Column, Any?> = HashMap()
+    private val values = HashMap<Column, Any?>()
 
     val numberColumns = this.visibleColumns.size
     fun getColumn(index: Int) = this.visibleColumns[index]
@@ -27,7 +27,7 @@ class EncryptedCursor internal constructor(
     {
         while (this.cursor.moveToNext())
         {
-            this.values = this.collectValues()
+            this.collectValues()
 
             if (this.where.valid(this.values))
             {
@@ -49,24 +49,24 @@ class EncryptedCursor internal constructor(
             else                       -> this.context.get()?.let { decrypt(it, this.cursor.getString(column)) }
         }
 
-    private fun collectValues(): Map<Column, Any?>
+    private fun collectValues()
     {
-        val values = HashMap<Column, Any?>()
+        this.values.clear()
 
         (0 until this.realColumns.size).forEach { col ->
             val column = this.realColumns[col]
             when (column.type)
             {
-                PRIMARY_KEY      -> values[column] = this.cursor.getLong(col)
+                PRIMARY_KEY      -> this.values[column] = this.cursor.getLong(col)
                 is PARCELABLE<*> ->
                 {
                     if (this.cursor.isNull(col))
                     {
-                        values[column] = null
+                        this.values[column] = null
                     }
                     else
                     {
-                        values[column] = this.context.get()?.let { context ->
+                        this.values[column] = this.context.get()?.let { context ->
                             val encrypted = this.cursor.getString(col)
                             decryptParcelable(context, column.type.clazz, encrypted)
                         }
@@ -75,27 +75,25 @@ class EncryptedCursor internal constructor(
                 else             ->
                 {
                     val decrypted = decrypted(col)
-                    values[column] =
-                            when (column.type)
-                            {
-                                INTEGER -> decrypted?.toInt() ?: 0
-                                LONG    -> decrypted?.toLong() ?: 0L
-                                FLOAT   -> decrypted?.toFloat() ?: 0f
-                                DOUBLE  -> decrypted?.toDouble() ?: 0.0
-                                DATE    -> decrypted?.let { va ->
-                                    val time = va.toLong()
-                                    val date = GregorianCalendar()
-                                    date.timeInMillis = time
-                                    date
-                                }
-                                TEXT    -> decrypted
-                                else    -> RuntimeException("Should not goes here with : ${column.type}")
+                    this.values[column] =
+                        when (column.type)
+                        {
+                            INTEGER -> decrypted?.toInt() ?: 0
+                            LONG    -> decrypted?.toLong() ?: 0L
+                            FLOAT   -> decrypted?.toFloat() ?: 0f
+                            DOUBLE  -> decrypted?.toDouble() ?: 0.0
+                            DATE    -> decrypted?.let { va ->
+                                val time = va.toLong()
+                                val date = GregorianCalendar()
+                                date.timeInMillis = time
+                                date
                             }
+                            TEXT    -> decrypted
+                            else    -> RuntimeException("Should not goes here with : ${column.type}")
+                        }
                 }
             }
         }
-
-        return values
     }
 
     fun getPrimaryKey(column: Int): Long
