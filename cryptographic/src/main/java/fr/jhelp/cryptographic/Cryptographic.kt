@@ -110,6 +110,7 @@ fun encrypt(context: Context, clearStream: InputStream, encryptedStream: OutputS
         read = clearStream.read(buffer)
     }
 
+    cipherOutputStream.flush()
     cipherOutputStream.close()
     clearStream.close()
 }
