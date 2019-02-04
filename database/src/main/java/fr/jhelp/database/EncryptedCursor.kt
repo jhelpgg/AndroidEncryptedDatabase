@@ -20,8 +20,6 @@ class EncryptedCursor internal constructor(
 
     val numberColumns = this.visibleColumns.size
     fun getColumn(index: Int) = this.visibleColumns[index]
-    val count get() = this.cursor.count
-    val position get() = this.cursor.position
 
     fun moveToNext(): Boolean
     {

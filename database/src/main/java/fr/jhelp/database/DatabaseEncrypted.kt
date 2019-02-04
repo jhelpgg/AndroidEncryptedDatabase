@@ -119,6 +119,20 @@ class DatabaseEncrypted(context: Context, databaseName: String)
         } ?: throw IllegalStateException("No context !")
     }
 
+    fun count(select: Select): Int
+    {
+        var count = 0
+        val cursor = this.select(select)
+
+        while (cursor.moveToNext())
+        {
+            count++
+        }
+
+        cursor.close()
+        return count
+    }
+
     fun update(update: Update): Int
     {
         if (update.encryptedContent.table !in this.tables)
@@ -187,6 +201,26 @@ class DatabaseEncrypted(context: Context, databaseName: String)
         }
 
         return count
+    }
+
+    /**
+     * If corresponding value is one and only one, it is update.
+     *
+     * Other case, that is to say not present or more one time, value is insert.
+     */
+    fun insertOrUpdate(update: Update)
+    {
+        val table = update.encryptedContent.table
+        val count = this.count(Select(table, table.columns()) WHERE update.where)
+
+        if (count == 1)
+        {
+            this.update(update)
+        }
+        else
+        {
+            this.insert(update.encryptedContent)
+        }
     }
 
     fun delete(delete: Delete): Int
