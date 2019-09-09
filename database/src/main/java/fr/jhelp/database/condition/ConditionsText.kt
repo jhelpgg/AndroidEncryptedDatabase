@@ -4,15 +4,19 @@ import fr.jhelp.database.Column
 import fr.jhelp.database.TEXT
 import java.util.regex.Pattern
 
-class ConditionRegex internal constructor(private val column: Column, private val pattern: Pattern) : Condition {
-    override fun valid(values: Map<Column, Any?>): Boolean {
+class ConditionRegex internal constructor(private val column: Column, private val pattern: Pattern) : Condition
+{
+    override fun valid(values: Map<Column, Any?>): Boolean
+    {
         val columnValue = values[this.column] as String?
         return columnValue?.let { this.pattern.matcher(it).matches() } ?: false
     }
 }
 
-infix fun Column.REGEX(pattern: Pattern): Condition {
-    if (this.type != TEXT) {
+infix fun Column.REGEX(pattern: Pattern): Condition
+{
+    if (this.type != TEXT)
+    {
         throw IllegalArgumentException("$this not a text")
     }
 
@@ -22,45 +26,57 @@ infix fun Column.REGEX(pattern: Pattern): Condition {
 infix fun Column.REGEX(regex: String) = this REGEX Pattern.compile(regex)
 
 class ConditionEqualsIgnoreCase internal constructor(private val column: Column, private val value: String) :
-    Condition {
-    override fun valid(values: Map<Column, Any?>): Boolean {
+    Condition
+{
+    override fun valid(values: Map<Column, Any?>): Boolean
+    {
         val columnValue = values[this.column] as String?
         return columnValue?.let { this.value.equals(columnValue, true) } ?: false
     }
 }
 
-infix fun Column.EQUALS_IGNORE_CASE(value: String): Condition {
-    if (this.type != TEXT) {
+infix fun Column.EQUALS_IGNORE_CASE(value: String): Condition
+{
+    if (this.type != TEXT)
+    {
         throw IllegalArgumentException("$this not a text")
     }
 
     return ConditionEqualsIgnoreCase(this, value)
 }
 
-class ConditionUpperIgnoreCase internal constructor(private val column: Column, private val value: String) : Condition {
-    override fun valid(values: Map<Column, Any?>): Boolean {
+class ConditionUpperIgnoreCase internal constructor(private val column: Column, private val value: String) : Condition
+{
+    override fun valid(values: Map<Column, Any?>): Boolean
+    {
         val columnValue = values[this.column] as String?
         return columnValue?.let { this.value.compareTo(columnValue, true) > 0 } ?: false
     }
 }
 
-infix fun Column.UPPER_IGNORE_CASE(value: String): Condition {
-    if (this.type != TEXT) {
+infix fun Column.UPPER_IGNORE_CASE(value: String): Condition
+{
+    if (this.type != TEXT)
+    {
         throw IllegalArgumentException("$this not a text")
     }
 
     return ConditionUpperIgnoreCase(this, value)
 }
 
-class ConditionLowerIgnoreCase internal constructor(private val column: Column, private val value: String) : Condition {
-    override fun valid(values: Map<Column, Any?>): Boolean {
+class ConditionLowerIgnoreCase internal constructor(private val column: Column, private val value: String) : Condition
+{
+    override fun valid(values: Map<Column, Any?>): Boolean
+    {
         val columnValue = values[this.column] as String?
         return columnValue?.let { this.value.compareTo(columnValue, true) < 0 } ?: false
     }
 }
 
-infix fun Column.LOWER_IGNORE_CASE(value: String): Condition {
-    if (this.type != TEXT) {
+infix fun Column.LOWER_IGNORE_CASE(value: String): Condition
+{
+    if (this.type != TEXT)
+    {
         throw IllegalArgumentException("$this not a text")
     }
 
