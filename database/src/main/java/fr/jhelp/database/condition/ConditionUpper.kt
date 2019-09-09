@@ -12,7 +12,7 @@ import fr.jhelp.database.PRIMARY_KEY
 import fr.jhelp.database.TEXT
 import java.util.GregorianCalendar
 
-class ConditionUpper<C : Comparable<C>> internal constructor(private val column: Column, private val maximum: C) :
+class ConditionUpper<C : Comparable<C>> internal constructor(private val column: Column, private val minimum: C) :
     Condition
 {
     override fun valid(values: Map<Column, Any?>): Boolean
@@ -21,14 +21,14 @@ class ConditionUpper<C : Comparable<C>> internal constructor(private val column:
 
         return when (this.column.type)
         {
-            PRIMARY_KEY      -> (columnValue as Long) > (this.maximum as Long)
-            INTEGER          -> (columnValue as Int) > (this.maximum as Int)
-            LONG             -> (columnValue as Long) > (this.maximum as Long)
-            FLOAT            -> (columnValue as Float) > (this.maximum as Float)
-            DOUBLE           -> (columnValue as Double) > (this.maximum as Double)
-            DATE             -> (columnValue as GregorianCalendar).timeInMillis > (this.maximum as GregorianCalendar).timeInMillis
-            TEXT             -> (columnValue as String) > (this.maximum as String)
-            is PARCELABLE<*> -> (columnValue as C) > this.maximum
+            PRIMARY_KEY      -> (columnValue as Long) > (this.minimum as Long)
+            INTEGER          -> (columnValue as Int) > (this.minimum as Int)
+            LONG             -> (columnValue as Long) > (this.minimum as Long)
+            FLOAT            -> (columnValue as Float) > (this.minimum as Float)
+            DOUBLE           -> (columnValue as Double) > (this.minimum as Double)
+            DATE             -> (columnValue as GregorianCalendar).timeInMillis > (this.minimum as GregorianCalendar).timeInMillis
+            TEXT             -> (columnValue as String) > (this.minimum as String)
+            is PARCELABLE<*> -> (columnValue as C) > this.minimum
         }
     }
 }

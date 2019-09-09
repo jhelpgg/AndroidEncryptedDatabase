@@ -11,7 +11,7 @@ class ConditionOr(private val condition1: Condition, private val condition2: Con
     }
 
     override fun valid(values: Map<Column, Any?>) =
-        this.condition1.valid(values) && this.condition2.valid(values)
+        this.condition1.valid(values) || this.condition2.valid(values)
 }
 
 infix fun Condition.OR(condition: Condition): Condition = ConditionOr(this, condition)
