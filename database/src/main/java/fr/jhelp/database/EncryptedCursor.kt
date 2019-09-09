@@ -23,6 +23,10 @@ class EncryptedCursor internal constructor(
 
     fun moveToNext(): Boolean
     {
+        if(this.cursor.isClosed) {
+            return false
+        }
+
         while (this.cursor.moveToNext())
         {
             this.collectValues()
